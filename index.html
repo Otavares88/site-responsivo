@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Placar — Futebol Brasileiro em Tempo Real</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<link rel="stylesheet" href="estilo.css">
+
+<body>
+
+<header>
+  <div class="nav">
+    <a href="#home" class="brand"><span class="dot"></span> Placar</a>
+    <button class="nav-toggle" id="navToggle" aria-expanded="false">☰</button>
+    <div class="nav-right">
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#home">Início</a></li>
+        <li><a href="#jogos">Jogos</a></li>
+        <li><a href="#classificacao">Classificação</a></li>
+      </ul>
+      <button class="theme-btn" id="themeBtn" aria-label="Alternar tema claro/escuro">🌙</button>
+    </div>
+  </div>
+  <div class="ticker-wrap">
+    <div class="ticker" id="ticker">
+      <span>AO VIVO</span>FLA 2-1 PAL · 63'&nbsp;&nbsp;&nbsp;&nbsp;<span>ENCERRADO</span>COR 1-1 SAO&nbsp;&nbsp;&nbsp;&nbsp;<span>ENCERRADO</span>BOT 3-0 GRE&nbsp;&nbsp;&nbsp;&nbsp;<span>AGENDADO</span>BAH x CRU · Sáb 18h30&nbsp;&nbsp;&nbsp;&nbsp;<span>AGENDADO</span>CAP x FLU · Sáb 16h&nbsp;&nbsp;&nbsp;&nbsp;
+      <span>AO VIVO</span>FLA 2-1 PAL · 63'&nbsp;&nbsp;&nbsp;&nbsp;<span>ENCERRADO</span>COR 1-1 SAO&nbsp;&nbsp;&nbsp;&nbsp;<span>ENCERRADO</span>BOT 3-0 GRE&nbsp;&nbsp;&nbsp;&nbsp;<span>AGENDADO</span>BAH x CRU · Sáb 18h30&nbsp;&nbsp;&nbsp;&nbsp;<span>AGENDADO</span>CAP x FLU · Sáb 16h&nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
+  </div>
+</header>
+
+<section class="hero" id="home">
+  <div class="wrap">
+    <div>
+      <h1>O placar do Brasileirão, em tempo real.</h1>
+      <p>Acompanhe os jogos da rodada e a classificação atualizada do Campeonato Brasileiro Série A, tudo em uma única tela.</p>
+    </div>
+    <div class="spotlight">
+      <span class="tag"><span class="pulse"></span> AO VIVO</span>
+      <div class="match-row">
+        <div class="team"><span class="badge b-fla">FLA</span> Flamengo</div>
+        <span class="score" id="scoreHome">2</span>
+      </div>
+      <div class="match-row">
+        <div class="team"><span class="badge b-pal">PAL</span> Palmeiras</div>
+        <span class="score" id="scoreAway">1</span>
+      </div>
+      <p class="minute"><span id="minuteCount">63</span>' — Maracanã</p>
+    </div>
+  </div>
+</section>
+
+<section id="jogos">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Jogos da rodada</h2>
+      <div class="filters" id="filters">
+        <button class="filter-btn active" data-filter="all">Todos</button>
+        <button class="filter-btn" data-filter="live">Ao vivo</button>
+        <button class="filter-btn" data-filter="done">Encerrados</button>
+        <button class="filter-btn" data-filter="sched">Agendados</button>
+      </div>
+    </div>
+
+    <div class="games-grid" id="gamesGrid">
+      <div class="game-card" data-status="live">
+        <div class="status live">● AO VIVO · 63'</div>
+        <div class="row"><div class="g-team"><span class="badge g-badge b-fla">FLA</span>Flamengo</div><b>2</b></div>
+        <div class="row"><div class="g-team"><span class="badge g-badge b-pal">PAL</span>Palmeiras</div><b>1</b></div>
+        <div class="info">Maracanã</div>
+      </div>
+      <div class="game-card" data-status="sched">
+        <div class="status">AGENDADO · Sáb 20/09 · 16h</div>
+        <div class="row"><div class="g-team"><span class="badge g-badge b-cap">CAP</span>Athletico-PR</div></div>
+        <div class="row"><div class="g-team"><span class="badge g-badge b-flu">FLU</span>Fluminense</div></div>
+        <div class="info">Ligga Arena</div>
+      </div>
+      <div class="game-card" data-status="sched">
+        <div class="status">AGENDADO · Sáb 20/09 · 18h30</div>
+        <div class="row"><div class="g-team"><span class="badge g-badge b-bah">BAH</span>Bahia</div></div>
+        <div class="row"><div class="g-team"><span class="badge g-badge b-cru">CRU</span>Cruzeiro</div></div>
+        <div class="info">Arena Fonte Nova</div>
+      </div>
+      <div class="game-card" data-status="done">
+        <div class="status">ENCERRADO</div>
+        <div class="row"><div class="g-team"><span class="badge g-badge b-cfc">CFC</span>Coritiba</div><b>1</b></div>
+        <div class="row"><div class="g-team"><span class="badge g-badge b-cam">CAM</span>Atlético-MG</div><b>1</b></div>
+        <div class="info">Couto Pereira</div>
+      </div>
+      <div class="game-card" data-status="sched">
+        <div class="status">AGENDADO · Dom 21/09 · 16h</div>
+        <div class="row"><div class="g-team"><span class="badge g-badge b-cor">COR</span>Corinthians</div></div>
+        <div class="row"><div class="g-team"><span class="badge g-badge b-sao">SAO</span>São Paulo</div></div>
+        <div class="info">Neo Química Arena</div>
+      </div>
+      <div class="game-card" data-status="done">
+        <div class="status">ENCERRADO</div>
+        <div class="row"><div class="g-team"><span class="badge g-badge b-bot">BOT</span>Botafogo</div><b>3</b></div>
+        <div class="row"><div class="g-team"><span class="badge g-badge b-gre">GRE</span>Grêmio</div><b>0</b></div>
+        <div class="info">Nilton Santos</div>
+      </div>
+    </div>
+    <p class="disclaimer">* Placares e horários ilustrativos, usados apenas para fins acadêmicos — não representam resultados reais.</p>
+  </div>
+</section>
+
+<section id="classificacao">
+  <div class="wrap">
+    <div class="section-head"><h2>Classificação — Brasileirão Série A 2026</h2></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Time</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th></tr></thead>
+        <tbody>
+          <tr class="g4"><td data-label="Pos">1</td><td>Flamengo</td><td data-label="Pontos">52</td><td data-label="Jogos">25</td><td data-label="Vitórias">15</td><td data-label="Empates">7</td><td data-label="Derrotas">3</td><td data-label="Gols Pró">45</td><td data-label="Gols Contra">21</td><td data-label="Saldo">+24</td></tr>
+          <tr class="g4"><td data-label="Pos">2</td><td>Palmeiras</td><td data-label="Pontos">48</td><td data-label="Jogos">24</td><td data-label="Vitórias">14</td><td data-label="Empates">6</td><td data-label="Derrotas">4</td><td data-label="Gols Pró">48</td><td data-label="Gols Contra">21</td><td data-label="Saldo">+27</td></tr>
+          <tr class="g4"><td data-label="Pos">3</td><td>Athletico-PR</td><td data-label="Pontos">45</td><td data-label="Jogos">25</td><td data-label="Vitórias">13</td><td data-label="Empates">6</td><td data-label="Derrotas">6</td><td data-label="Gols Pró">37</td><td data-label="Gols Contra">25</td><td data-label="Saldo">+12</td></tr>
+          <tr class="g4"><td data-label="Pos">4</td><td>Fluminense</td><td data-label="Pontos">42</td><td data-label="Jogos">25</td><td data-label="Vitórias">11</td><td data-label="Empates">9</td><td data-label="Derrotas">5</td><td data-label="Gols Pró">39</td><td data-label="Gols Contra">32</td><td data-label="Saldo">+7</td></tr>
+          <tr class="sula"><td data-label="Pos">5</td><td>Bahia</td><td data-label="Pontos">40</td><td data-label="Jogos">25</td><td data-label="Vitórias">10</td><td data-label="Empates">10</td><td data-label="Derrotas">5</td><td data-label="Gols Pró">37</td><td data-label="Gols Contra">30</td><td data-label="Saldo">+7</td></tr>
+          <tr class="sula"><td data-label="Pos">6</td><td>Cruzeiro</td><td data-label="Pontos">39</td><td data-label="Jogos">25</td><td data-label="Vitórias">11</td><td data-label="Empates">6</td><td data-label="Derrotas">8</td><td data-label="Gols Pró">35</td><td data-label="Gols Contra">36</td><td data-label="Saldo">−1</td></tr>
+          <tr><td data-label="Pos">7</td><td>Coritiba</td><td data-label="Pontos">37</td><td data-label="Jogos">25</td><td data-label="Vitórias">10</td><td data-label="Empates">7</td><td data-label="Derrotas">8</td><td data-label="Gols Pró">33</td><td data-label="Gols Contra">33</td><td data-label="Saldo">0</td></tr>
+          <tr><td data-label="Pos">8</td><td>Atlético-MG</td><td data-label="Pontos">36</td><td data-label="Jogos">24</td><td data-label="Vitórias">10</td><td data-label="Empates">6</td><td data-label="Derrotas">8</td><td data-label="Gols Pró">32</td><td data-label="Gols Contra">28</td><td data-label="Saldo">+4</td></tr>
+          <tr><td data-label="Pos">9</td><td>Red Bull Bragantino</td><td data-label="Pontos">35</td><td data-label="Jogos">24</td><td data-label="Vitórias">10</td><td data-label="Empates">5</td><td data-label="Derrotas">9</td><td data-label="Gols Pró">29</td><td data-label="Gols Contra">25</td><td data-label="Saldo">+4</td></tr>
+          <tr><td data-label="Pos">10</td><td>Corinthians</td><td data-label="Pontos">32</td><td data-label="Jogos">25</td><td data-label="Vitórias">8</td><td data-label="Empates">8</td><td data-label="Derrotas">9</td><td data-label="Gols Pró">26</td><td data-label="Gols Contra">25</td><td data-label="Saldo">+1</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--live)"></i>G4 — Libertadores</span>
+      <span><i style="background:var(--accent-2)"></i>Zona de Sul-Americana</span>
+    </div>
+    <p class="disclaimer">Dados aproximados de um recorte real do Brasileirão 2026 (após a 25ª rodada), usados como exemplo para este projeto acadêmico.</p>
+  </div>
+</section>
+
+<footer>
+  Projeto de André Gustavo — painel de futebol desenvolvido para fins de estudo. © 2026
+</footer>
+
+<script src="fut.js"></script>
+</body>
+</html>
