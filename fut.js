@@ -1,371 +1,1051 @@
-const API_BASE_URL = ""; 
-const LIVE_POLL_MS = 60_000;
-const GENERAL_POLL_MS = 10 * 60_000;
+/* =====================================
+   VARIÁVEIS
+===================================== */
 
-const $ = (selector, root = document) => root.querySelector(selector);
-const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+const estado = {
 
-const state = {
-  league: "brasileirao",
-  view: "overview",
-  matchFilter: "all",
-  playerStat: "goals",
-  tableMode: "overall",
-  playerSearch: "",
-  clubSearch: "",
-  data: structuredClone(LEAGUES),
-  liveEnabled: Boolean(API_BASE_URL),
-  lastRefresh: null,
+    liga: "brasileirao",
+
+    filtroJogo: "all",
+
+    estatistica: "goals",
+
+    modoTabela: "overall",
+
+    buscaJogador: "",
+
+    buscaClube: ""
+
 };
 
-function getLeague() {
-  return state.data[state.league];
+
+/* =====================================
+   FUNÇÕES AUXILIARES
+===================================== */
+
+function selecionarLiga() {
+
+    return LEAGUES[estado.liga];
+
 }
 
-function setTheme(theme) {
-  document.documentElement.dataset.theme = theme;
-  localStorage.setItem("placar-theme", theme);
-  $("#themeBtn").textContent = theme === "dark" ? "☀" : "☾";
+
+function $(seletor) {
+
+    return document.querySelector(seletor);
+
 }
 
-function initTheme() {
-  const saved = localStorage.getItem("placar-theme");
-  setTheme(saved || "dark");
+
+function $$(seletor) {
+
+    return document.querySelectorAll(seletor);
+
 }
 
-function zoneForPosition(league, position) {
-  return league.zones.find(zone => position >= zone.from && position <= zone.to) || null;
-}
 
-function teamData(league, name) {
-  const normalized = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  return league.standings.find(row => row[1].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(normalized.split(" ")[0])) || null;
-}
+function nomeCurto(nome) {
 
-function shortTeam(name) {
-  const parts = name.split(/\s+/).filter(Boolean);
-  return parts.length === 1 ? parts[0].slice(0, 3).toUpperCase() : parts.map(p => p[0]).join("").slice(0, 3).toUpperCase();
-}
+    const partes = nome
+        .split(" ")
+        .filter(Boolean);
 
-function crest(label, extra = "") {
-  return `<span class="crest ${extra}" aria-hidden="true">${shortTeam(label)}</span>`;
-}
+    if (partes.length === 1) {
 
-function formatDateTime(date = new Date()) {
-  return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit", month: "2-digit", year: "numeric",
-    hour: "2-digit", minute: "2-digit"
-  }).format(date);
-}
+        return partes[0]
+            .substring(0, 3)
+            .toUpperCase();
 
-function renderLeagueIdentity() {
-  const league = getLeague();
-  document.documentElement.dataset.league = league.theme;
-  $("#leagueEyebrow").textContent = league.eyebrow;
-  $("#heroText").textContent = league.heroText;
-  $("#lastUpdated").textContent = league.updatedAt;
-  document.title = `Placar — ${league.name}`;
-
-  $$(".league-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.league === state.league));
-  $$("#mobileMenu [data-league]").forEach(btn => btn.classList.toggle("active", btn.dataset.league === state.league));
-}
-
-function renderMicroStats() {
-  const league = getLeague();
-  const totalGoals = league.standings.reduce((sum, row) => sum + row[6], 0);
-  const leader = league.standings[0];
-  const scorers = league.scorers[0];
-  $("#microStats").innerHTML = `
-    <div><strong>${league.standings.length}</strong><span>clubes</span></div>
-    <div><strong>${leader[9]}</strong><span>pts · líder</span></div>
-    <div><strong>${totalGoals}</strong><span>gols registrados</span></div>
-    <div><strong>${scorers[2]}</strong><span>gols · artilheiro</span></div>
-  `;
-}
-
-function renderSpotlight() {
-  const league = getLeague();
-  const top = league.scorers.slice(0, 3);
-  const leader = top[0];
-  $("#spotlightTitle").textContent = leader[0];
-  $("#spotlightSub").textContent = `${leader[1]} · ${state.playerStat === "assists" ? "líder em assistências" : "artilheiro"}`;
-  $("#spotlightNumber").textContent = state.playerStat === "assists" ? league.assists[0][2] : leader[2];
-  $("#spotlightBars").innerHTML = top.map((item, index) => {
-    const value = state.playerStat === "assists" ? (league.assists[index]?.[2] || 0) : item[2];
-    const max = state.playerStat === "assists" ? league.assists[0][2] : leader[2];
-    return `<div class="bar-row"><span>#${index + 1} ${item[0]}</span><div><i style="width:${Math.min(100, (value / max) * 100)}%"></i></div><b>${value}</b></div>`;
-  }).join("");
-}
-
-function renderMatches() {
-  const league = getLeague();
-  const filtered = league.matches.filter(match => state.matchFilter === "all" || match.status === state.matchFilter);
-  const grid = $("#matchesGrid");
-
-  if (!filtered.length) {
-    grid.innerHTML = `<div class="empty-state">Nenhum jogo encontrado nesse filtro.</div>`;
-  } else {
-    grid.innerHTML = filtered.map(match => {
-      const isLive = match.status === "live";
-      const statusText = isLive ? `AO VIVO · ${match.minute || 1}'` : match.status === "finished" ? "ENCERRADO" : `PRÓXIMO · ${match.time}`;
-      return `
-        <article class="match-card ${isLive ? "match-live" : ""}">
-          <div class="match-meta">
-            <span class="match-status ${isLive ? "live" : ""}">${isLive ? "● " : ""}${statusText}</span>
-            <span>${match.date}</span>
-          </div>
-          <div class="match-teams">
-            <div class="club-line">${crest(match.home, "home-crest")}<span>${match.home}</span></div>
-            <div class="match-score ${isLive ? "score-live" : ""}">${Number.isInteger(match.hs) ? match.hs : "–"}<em>x</em>${Number.isInteger(match.as) ? match.as : "–"}</div>
-            <div class="club-line right">${crest(match.away, "away-crest")}<span>${match.away}</span></div>
-          </div>
-          <div class="match-footer"><span>◉ ${match.venue}</span><span>${match.status === "finished" ? "Resultado final" : "Agenda"}</span></div>
-        </article>`;
-    }).join("");
-  }
-
-  const next = league.matches.find(m => m.status === "scheduled") || league.matches.find(m => m.status === "live");
-  $("#nextGameBadge").textContent = next ? (next.status === "live" ? "AO VIVO" : next.date) : "—";
-  $("#nextGame").innerHTML = next ? `
-    <div class="next-game-teams">
-      <div>${crest(next.home)}<strong>${next.home}</strong></div>
-      <span>${next.status === "scheduled" ? next.time : `${next.hs} : ${next.as}`}</span>
-      <div>${crest(next.away)}<strong>${next.away}</strong></div>
-    </div>
-    <small>${next.venue || "Estádio a confirmar"}</small>` : `<div class="empty-side">Agenda ainda não disponível.</div>`;
-}
-
-function sortTable(rows, mode) {
-  if (mode === "attack") return [...rows].sort((a,b) => b[6] - a[6] || b[9] - a[9]);
-  if (mode === "defense") return [...rows].sort((a,b) => a[7] - b[7] || b[9] - a[9]);
-  if (mode === "form") return [...rows].sort((a,b) => formScore(b[10]) - formScore(a[10]) || b[9] - a[9]);
-  return [...rows];
-}
-
-function formScore(form) {
-  return [...form].reduce((sum, x) => sum + ({V: 3, W: 3, E: 1, D: 0, L: 0}[x] || 0), 0);
-}
-
-function renderStandings() {
-  const league = getLeague();
-  const rows = sortTable(league.standings, state.tableMode);
-  const isRanking = state.tableMode !== "overall";
-
-  $("#standingsTable").innerHTML = `
-    <div class="table-scroll">
-      <table class="standings-table">
-        <thead><tr>
-          <th>#</th><th>Clube</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th><th>PTS</th><th>Forma</th>
-        </tr></thead>
-        <tbody>
-          ${rows.map((row, index) => {
-            const originalPos = league.standings.indexOf(row) + 1;
-            const zone = zoneForPosition(league, originalPos);
-            return `<tr data-position="${originalPos}" class="${zone ? `zone-${zone.tone}` : ""}">
-              <td data-label="#"><span class="pos">${isRanking ? index + 1 : originalPos}</span></td>
-              <td data-label="Clube"><span class="team-cell">${crest(row[1])}<strong>${row[1]}</strong></span></td>
-              <td data-label="J">${row[2]}</td><td data-label="V">${row[3]}</td><td data-label="E">${row[4]}</td><td data-label="D">${row[5]}</td>
-              <td data-label="GP">${row[6]}</td><td data-label="GC">${row[7]}</td><td data-label="SG"><strong>${row[8] > 0 ? "+" : ""}${row[8]}</strong></td><td data-label="PTS"><strong class="points">${row[9]}</strong></td>
-              <td data-label="Forma">${row[10] ? `<span class="form-dots">${[...row[10]].map(ch => `<i class="${ch === "V" || ch === "W" ? "win" : ch === "E" ? "draw" : "loss"}">${ch === "W" ? "V" : ch}</i>`).join("")}</span>` : `<span class="form-empty">—</span>`}</td>
-            </tr>`;
-          }).join("")}
-        </tbody>
-      </table>
-    </div>`;
-
-  $("#tableLegend").innerHTML = league.zones.map(zone => `<span><i class="legend-dot ${zone.tone}"></i>${zone.label}</span>`).join("");
-}
-
-function getPlayers() {
-  const league = getLeague();
-  return state.playerStat === "goals" ? league.scorers : league.assists;
-}
-
-function renderPodium() {
-  const players = getPlayers().slice(0,3);
-  const valueIndex = state.playerStat === "goals" ? 2 : 2;
-  $("#podium").innerHTML = players.map((p, i) => `
-    <article class="podium-card rank-${i + 1}">
-      <span class="podium-rank">${i + 1}</span>
-      <div class="avatar">${p[0].split(/\s+/).map(x => x[0]).join("").slice(0,2)}</div>
-      <strong>${p[0]}</strong>
-      <span>${p[1]}</span>
-      <b>${p[valueIndex]} <small>${state.playerStat === "goals" ? "GOL" : "AST"}</small></b>
-    </article>`).join("");
-}
-
-function renderPlayers() {
-  const players = getPlayers().filter(p => p[0].toLowerCase().includes(state.playerSearch.toLowerCase()) || p[1].toLowerCase().includes(state.playerSearch.toLowerCase()));
-  $("#playersTable").innerHTML = `
-    <div class="table-scroll">
-      <table class="players-table">
-        <thead><tr><th>#</th><th>Jogador</th><th>Clube</th><th>${state.playerStat === "goals" ? "Gols" : "Assist."}</th><th>Jogos</th>${state.playerStat === "goals" ? "<th>AST</th>" : ""}</tr></thead>
-        <tbody>
-          ${players.map((p, i) => `<tr><td>${i + 1}</td><td><span class="player-cell"><span class="player-avatar">${p[0].slice(0,1)}</span><strong>${p[0]}</strong></span></td><td>${p[1]}</td><td><strong class="stat-number">${p[2]}</strong></td><td>${p[3]}</td>${state.playerStat === "goals" ? `<td>${p[4]}</td>` : ""}</tr>`).join("") || `<tr><td colspan="6" class="no-results">Nenhum jogador encontrado.</td></tr>`}
-        </tbody>
-      </table>
-    </div>`;
-}
-
-function renderClubs() {
-  const league = getLeague();
-  const query = state.clubSearch.toLowerCase();
-  const clubs = league.standings.filter(row => row[1].toLowerCase().includes(query));
-  $("#clubsGrid").innerHTML = clubs.map((row, index) => `
-    <button class="club-card" type="button" data-club="${row[1]}">
-      ${crest(row[1])}
-      <span><strong>${row[1]}</strong><small>${row[9]} pts · ${row[2]} jogos</small></span>
-      <b>#${index + 1}</b>
-    </button>`).join("") || `<div class="empty-state">Nenhum clube encontrado.</div>`;
-}
-
-function renderAll() {
-  renderLeagueIdentity();
-  renderMicroStats();
-  renderSpotlight();
-  renderMatches();
-  renderStandings();
-  renderPodium();
-  renderPlayers();
-  renderClubs();
-}
-
-async function syncFromAPI() {
-  if (!API_BASE_URL) return false;
-  const url = `${API_BASE_URL.replace(/\/$/, "")}/api/dashboard/${getLeague().apiLeagueId}`;
-  setSyncState("Sincronizando…", "syncing");
-  try {
-    const response = await fetch(url, { cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const payload = await response.json();
-    if (payload.league) {
-      const existing = getLeague();
-      existing.updatedAt = payload.updatedAt ? formatDateTime(new Date(payload.updatedAt)) : formatDateTime();
-      if (Array.isArray(payload.standings)) existing.standings = payload.standings;
-      if (Array.isArray(payload.scorers)) existing.scorers = payload.scorers;
-      if (Array.isArray(payload.assists)) existing.assists = payload.assists;
-      if (Array.isArray(payload.matches)) existing.matches = payload.matches;
     }
-    state.lastRefresh = new Date();
-    renderAll();
-    setSyncState(`Atualizado às ${formatDateTime(state.lastRefresh)}`, "ok");
-    return true;
-  } catch (error) {
-    console.warn("Falha na sincronização:", error);
-    setSyncState("Snapshot local · API indisponível", "offline");
-    return false;
-  }
+
+    return partes
+        .map(parte => parte[0])
+        .join("")
+        .substring(0, 3)
+        .toUpperCase();
+
 }
 
-function setSyncState(text, tone) {
-  $("#syncStatus").textContent = text;
-  $(".live-status").classList.remove("is-syncing", "is-offline");
-  if (tone === "syncing") $(".live-status").classList.add("is-syncing");
-  if (tone === "offline") $(".live-status").classList.add("is-offline");
+
+function escudo(nome) {
+
+    return `
+        <span class="crest">
+            ${nomeCurto(nome)}
+        </span>
+    `;
+
 }
 
-function scrollToId(id) {
-  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+/* =====================================
+   TEMA
+===================================== */
+
+function carregarTema() {
+
+    const temaSalvo =
+        localStorage.getItem("placar-theme");
+
+    if (temaSalvo) {
+
+        document.documentElement.dataset.theme =
+            temaSalvo;
+
+    }
+
+    atualizarBotaoTema();
+
 }
 
-function setLeague(leagueId) {
-  if (!state.data[leagueId]) return;
-  state.league = leagueId;
-  state.matchFilter = "all";
-  state.playerSearch = "";
-  state.clubSearch = "";
-  $("#playerSearch").value = "";
-  $("#clubSearch").value = "";
-  renderAll();
-  syncFromAPI();
-  scrollToId("conteudo");
-  closeMenu();
+
+function alterarTema() {
+
+    const temaAtual =
+        document.documentElement.dataset.theme;
+
+    const novoTema =
+        temaAtual === "dark"
+            ? "light"
+            : "dark";
+
+    document.documentElement.dataset.theme =
+        novoTema;
+
+    localStorage.setItem(
+        "placar-theme",
+        novoTema
+    );
+
+    atualizarBotaoTema();
+
 }
 
-function closeMenu() {
-  const menu = $("#mobileMenu");
-  const button = $("#menuBtn");
-  menu.hidden = true;
-  button.setAttribute("aria-expanded", "false");
+
+function atualizarBotaoTema() {
+
+    const tema =
+        document.documentElement.dataset.theme;
+
+    $("#themeBtn").textContent =
+        tema === "dark"
+            ? "☀"
+            : "☾";
+
 }
 
-function initEvents() {
-  $$(`[data-league]`).forEach(btn => btn.addEventListener("click", () => setLeague(btn.dataset.league)));
 
-  $$("[data-match-filter]").forEach(btn => btn.addEventListener("click", () => {
-    state.matchFilter = btn.dataset.matchFilter;
-    $$("[data-match-filter]").forEach(b => b.classList.toggle("active", b === btn));
-    renderMatches();
-  }));
+/* =====================================
+   LIGA
+===================================== */
 
-  $$("[data-player-stat]").forEach(btn => btn.addEventListener("click", () => {
-    state.playerStat = btn.dataset.playerStat;
-    $$("[data-player-stat]").forEach(b => b.classList.toggle("active", b === btn));
-    renderSpotlight(); renderPodium(); renderPlayers();
-  }));
+function alterarLiga(liga) {
 
-  $$(".seg-btn").forEach(btn => btn.addEventListener("click", () => {
-    state.view = btn.dataset.view;
-    $$(".seg-btn").forEach(b => b.classList.toggle("active", b === btn));
-    const targets = { overview: "jogos", matches: "jogos", standings: "tabela", players: "estatisticas" };
-    scrollToId(targets[state.view]);
-  }));
+    estado.liga = liga;
 
-  $("#tableMode").addEventListener("change", e => {
-    state.tableMode = e.target.value;
-    renderStandings();
-  });
+    document.documentElement.dataset.league =
+        liga;
 
-  $("#playerSearch").addEventListener("input", e => {
-    state.playerSearch = e.target.value.trim();
-    renderPlayers();
-  });
+    const dados = selecionarLiga();
 
-  $("#clubSearch").addEventListener("input", e => {
-    state.clubSearch = e.target.value.trim();
-    renderClubs();
-  });
+    document.title =
+        `Placar - ${dados.name}`;
 
-  $("#themeBtn").addEventListener("click", () => {
-    setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
-  });
+    $$(".liga-btn").forEach(botao => {
 
-  $("#refreshBtn").addEventListener("click", async () => {
-    const btn = $("#refreshBtn");
-    btn.classList.add("spinning");
-    await syncFromAPI();
-    setTimeout(() => btn.classList.remove("spinning"), 500);
-  });
+        botao.classList.toggle(
+            "ativo",
+            botao.dataset.league === liga
+        );
 
-  $("#menuBtn").addEventListener("click", () => {
-    const menu = $("#mobileMenu");
-    const next = menu.hidden;
-    menu.hidden = !next;
-    $("#menuBtn").setAttribute("aria-expanded", String(next));
-  });
+    });
 
-  $$("[data-scroll]").forEach(btn => btn.addEventListener("click", () => scrollToId(btn.dataset.scroll)));
+    $$("#mobileMenu [data-league]")
+        .forEach(botao => {
 
-  window.addEventListener("scroll", () => {
-    $(".site-header").classList.toggle("scrolled", window.scrollY > 20);
-  }, { passive: true });
+            botao.classList.toggle(
+                "ativo",
+                botao.dataset.league === liga
+            );
+
+        });
+
+    renderizarTudo();
+
 }
 
-function startPolling() {
-  if (!API_BASE_URL) {
-    setSyncState(`Snapshot local · ${SNAPSHOT_DATE}`, "offline");
-    return;
-  }
-  syncFromAPI();
-  window.setInterval(syncFromAPI, GENERAL_POLL_MS);
-  window.setInterval(() => {
-    
-    const hasLive = getLeague().matches.some(match => match.status === "live");
-    if (hasLive) syncFromAPI();
-  }, LIVE_POLL_MS);
+
+/* =====================================
+   HERO
+===================================== */
+
+function renderizarHero() {
+
+    const dados = selecionarLiga();
+
+    $("#leagueEyebrow").textContent =
+        dados.eyebrow;
+
+    $("#heroText").textContent =
+        dados.heroText;
+
 }
 
-initTheme();
-initEvents();
-renderAll();
-startPolling();
+
+/* =====================================
+   ESTATÍSTICAS RÁPIDAS
+===================================== */
+
+function renderizarMicroStats() {
+
+    const dados = selecionarLiga();
+
+    const lider =
+        dados.standings[0];
+
+    const artilheiro =
+        dados.scorers[0];
+
+    const totalGols =
+        dados.standings.reduce(
+            (total, time) => total + time[6],
+            0
+        );
+
+    $("#microStats").innerHTML = `
+
+        <div>
+            <strong>
+                ${dados.standings.length}
+            </strong>
+
+            <span>
+                clubes
+            </span>
+        </div>
+
+        <div>
+            <strong>
+                ${lider[9]}
+            </strong>
+
+            <span>
+                pontos do líder
+            </span>
+        </div>
+
+        <div>
+            <strong>
+                ${totalGols}
+            </strong>
+
+            <span>
+                gols
+            </span>
+        </div>
+
+        <div>
+            <strong>
+                ${artilheiro[2]}
+            </strong>
+
+            <span>
+                gols do artilheiro
+            </span>
+        </div>
+
+    `;
+
+}
+
+
+/* =====================================
+   DESTAQUE
+===================================== */
+
+function renderizarDestaque() {
+
+    const dados = selecionarLiga();
+
+    const artilheiro =
+        dados.scorers[0];
+
+    $("#spotlightTitle").textContent =
+        artilheiro[0];
+
+    $("#spotlightSub").textContent =
+        `${artilheiro[1]} · artilheiro`;
+
+    $("#spotlightNumber").textContent =
+        artilheiro[2];
+
+    const maiores = dados.scorers.slice(0, 4);
+
+    const maiorValor =
+        maiores[0][2];
+
+    $("#spotlightBars").innerHTML =
+        maiores.map(jogador => {
+
+            const porcentagem =
+                (jogador[2] / maiorValor) * 100;
+
+            return `
+
+                <div class="bar-row">
+
+                    <span>
+                        ${jogador[0]}
+                    </span>
+
+                    <div>
+                        <i style="width:${porcentagem}%"></i>
+                    </div>
+
+                    <b>
+                        ${jogador[2]}
+                    </b>
+
+                </div>
+
+            `;
+
+        }).join("");
+
+}
+
+
+/* =====================================
+   JOGOS
+===================================== */
+
+function renderizarJogos() {
+
+    const dados = selecionarLiga();
+
+    let jogos =
+        [...dados.matches];
+
+    if (estado.filtroJogo !== "all") {
+
+        jogos =
+            jogos.filter(
+                jogo =>
+                    jogo.status ===
+                    estado.filtroJogo
+            );
+
+    }
+
+    if (jogos.length === 0) {
+
+        $("#matchesGrid").innerHTML = `
+            <div class="match-card">
+                Nenhum jogo encontrado.
+            </div>
+        `;
+
+        return;
+
+    }
+
+    $("#matchesGrid").innerHTML =
+        jogos.map(jogo => {
+
+            let statusTexto =
+                "Próximo";
+
+            if (jogo.status === "finished") {
+
+                statusTexto =
+                    "Encerrado";
+
+            }
+
+            if (jogo.status === "live") {
+
+                statusTexto =
+                    "Ao vivo";
+
+            }
+
+            const placar =
+                jogo.status === "scheduled"
+                    ? jogo.time
+                    : `${jogo.hs} x ${jogo.as}`;
+
+            return `
+
+                <article class="match-card">
+
+                    <div class="match-top">
+
+                        <span>
+                            ${jogo.date}
+                        </span>
+
+                        <span class="match-status">
+                            ${statusTexto}
+                        </span>
+
+                    </div>
+
+                    <div class="match-teams">
+
+                        <div class="club-line">
+
+                            ${escudo(jogo.home)}
+
+                            <span>
+                                ${jogo.home}
+                            </span>
+
+                        </div>
+
+                        <strong class="match-score">
+                            ${placar}
+                        </strong>
+
+                        <div class="club-line right">
+
+                            <span>
+                                ${jogo.away}
+                            </span>
+
+                            ${escudo(jogo.away)}
+
+                        </div>
+
+                    </div>
+
+                    <div class="match-info">
+                        ${jogo.venue}
+                    </div>
+
+                </article>
+
+            `;
+
+        }).join("");
+
+
+    renderizarProximoJogo();
+
+}
+
+
+function renderizarProximoJogo() {
+
+    const dados = selecionarLiga();
+
+    const proximo =
+        dados.matches.find(
+            jogo =>
+                jogo.status === "scheduled"
+        );
+
+    if (!proximo) {
+
+        $("#nextGame").innerHTML =
+            "<p>Nenhum jogo próximo.</p>";
+
+        return;
+
+    }
+
+    $("#nextGame").innerHTML = `
+
+        <div class="next-match">
+
+            ${escudo(proximo.home)}
+
+            <strong>
+                ${proximo.home}
+            </strong>
+
+            <span>
+                x
+            </span>
+
+            <strong>
+                ${proximo.away}
+            </strong>
+
+            ${escudo(proximo.away)}
+
+            <p>
+                ${proximo.date}
+                ·
+                ${proximo.time}
+            </p>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =====================================
+   CLASSIFICAÇÃO
+===================================== */
+
+function renderizarTabela() {
+
+    const dados = selecionarLiga();
+
+    let tabela =
+        [...dados.standings];
+
+    if (estado.modoTabela === "attack") {
+
+        tabela.sort(
+            (a, b) => b[6] - a[6]
+        );
+
+    }
+
+    if (estado.modoTabela === "defense") {
+
+        tabela.sort(
+            (a, b) => a[7] - b[7]
+        );
+
+    }
+
+    if (estado.modoTabela === "form") {
+
+        tabela.sort(
+            (a, b) =>
+                b[10].replaceAll("D", "").length -
+                a[10].replaceAll("D", "").length
+        );
+
+    }
+
+    $("#standingsTable").innerHTML = `
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>#</th>
+                    <th>Time</th>
+                    <th>J</th>
+                    <th>V</th>
+                    <th>E</th>
+                    <th>D</th>
+                    <th>GP</th>
+                    <th>GC</th>
+                    <th>SG</th>
+                    <th>PTS</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                ${tabela.map((time, index) => `
+
+                    <tr>
+
+                        <td>
+                            ${index + 1}
+                        </td>
+
+                        <td>
+                            <strong>
+                                ${time[1]}
+                            </strong>
+                        </td>
+
+                        <td>${time[2]}</td>
+                        <td>${time[3]}</td>
+                        <td>${time[4]}</td>
+                        <td>${time[5]}</td>
+                        <td>${time[6]}</td>
+                        <td>${time[7]}</td>
+                        <td>${time[8]}</td>
+
+                        <td>
+                            <strong>
+                                ${time[9]}
+                            </strong>
+                        </td>
+
+                    </tr>
+
+                `).join("")}
+
+            </tbody>
+
+        </table>
+
+    `;
+
+
+    $("#tableLegend").innerHTML =
+        dados.zones.map(zona => `
+
+            <span>
+
+                <i class="legend-dot ${zona.tone}">
+                </i>
+
+                ${zona.label}
+
+            </span>
+
+        `).join("");
+
+}
+
+
+/* =====================================
+   JOGADORES
+===================================== */
+
+function jogadoresAtuais() {
+
+    const dados = selecionarLiga();
+
+    return estado.estatistica === "goals"
+        ? dados.scorers
+        : dados.assists;
+
+}
+
+
+function renderizarPodio() {
+
+    const jogadores =
+        jogadoresAtuais().slice(0, 3);
+
+    $("#podium").innerHTML =
+        jogadores.map((jogador, index) => {
+
+            return `
+
+                <article class="podium-card">
+
+                    <span class="podium-rank">
+                        ${index + 1}
+                    </span>
+
+                    <div class="avatar">
+                        ${jogador[0]
+                            .split(" ")
+                            .map(nome => nome[0])
+                            .join("")
+                            .substring(0, 2)}
+                    </div>
+
+                    <strong>
+                        ${jogador[0]}
+                    </strong>
+
+                    <span>
+                        ${jogador[1]}
+                    </span>
+
+                    <b>
+                        ${jogador[2]}
+                        <small>
+                            ${estado.estatistica === "goals"
+                                ? "GOL"
+                                : "AST"}
+                        </small>
+                    </b>
+
+                </article>
+
+            `;
+
+        }).join("");
+
+}
+
+
+function renderizarJogadores() {
+
+    const jogadores =
+        jogadoresAtuais()
+        .filter(jogador => {
+
+            const busca =
+                estado.buscaJogador
+                    .toLowerCase();
+
+            return (
+                jogador[0]
+                    .toLowerCase()
+                    .includes(busca)
+                ||
+                jogador[1]
+                    .toLowerCase()
+                    .includes(busca)
+            );
+
+        });
+
+
+    const nomeColuna =
+        estado.estatistica === "goals"
+            ? "Gols"
+            : "Assistências";
+
+
+    $("#playersTable").innerHTML = `
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>#</th>
+                    <th>Jogador</th>
+                    <th>Clube</th>
+                    <th>${nomeColuna}</th>
+                    <th>Jogos</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                ${jogadores.map((jogador, index) => `
+
+                    <tr>
+
+                        <td>
+                            ${index + 1}
+                        </td>
+
+                        <td>
+                            <strong>
+                                ${jogador[0]}
+                            </strong>
+                        </td>
+
+                        <td>
+                            ${jogador[1]}
+                        </td>
+
+                        <td>
+                            <strong>
+                                ${jogador[2]}
+                            </strong>
+                        </td>
+
+                        <td>
+                            ${jogador[3]}
+                        </td>
+
+                    </tr>
+
+                `).join("")}
+
+            </tbody>
+
+        </table>
+
+    `;
+
+}
+
+
+/* =====================================
+   CLUBES
+===================================== */
+
+function renderizarClubes() {
+
+    const dados = selecionarLiga();
+
+    const busca =
+        estado.buscaClube.toLowerCase();
+
+    const clubes =
+        dados.standings.filter(time =>
+            time[1]
+                .toLowerCase()
+                .includes(busca)
+        );
+
+
+    $("#clubsGrid").innerHTML =
+        clubes.map((time, index) => `
+
+            <button
+                class="club-card"
+                type="button">
+
+                ${escudo(time[1])}
+
+                <span>
+
+                    <strong>
+                        ${time[1]}
+                    </strong>
+
+                    <small>
+                        ${time[9]} pontos
+                    </small>
+
+                </span>
+
+                <b>
+                    #${index + 1}
+                </b>
+
+            </button>
+
+        `).join("");
+
+}
+
+
+/* =====================================
+   RENDERIZA TUDO
+===================================== */
+
+function renderizarTudo() {
+
+    renderizarHero();
+
+    renderizarMicroStats();
+
+    renderizarDestaque();
+
+    renderizarJogos();
+
+    renderizarTabela();
+
+    renderizarPodio();
+
+    renderizarJogadores();
+
+    renderizarClubes();
+
+}
+
+
+/* =====================================
+   EVENTOS
+===================================== */
+
+
+/* TEMA */
+
+$("#themeBtn").addEventListener(
+    "click",
+    alterarTema
+);
+
+
+/* LIGAS */
+
+$$(".liga-btn").forEach(botao => {
+
+    botao.addEventListener(
+        "click",
+        () => {
+
+            alterarLiga(
+                botao.dataset.league
+            );
+
+        }
+    );
+
+});
+
+
+/* MENU MOBILE */
+
+$("#menuBtn").addEventListener(
+    "click",
+    () => {
+
+        const menu =
+            $("#mobileMenu");
+
+        const aberto =
+            !menu.hidden;
+
+        menu.hidden =
+            aberto;
+
+        $("#menuBtn").textContent =
+            aberto ? "☰" : "✕";
+
+    }
+);
+
+
+/* LINKS DO MENU */
+
+$$(".mobile-menu a").forEach(link => {
+
+    link.addEventListener(
+        "click",
+        () => {
+
+            $("#mobileMenu").hidden =
+                true;
+
+            $("#menuBtn").textContent =
+                "☰";
+
+        }
+    );
+
+});
+
+
+/* FILTROS DE JOGOS */
+
+$$("[data-match-filter]")
+.forEach(botao => {
+
+    botao.addEventListener(
+        "click",
+        () => {
+
+            estado.filtroJogo =
+                botao.dataset.matchFilter;
+
+            $$("[data-match-filter]")
+            .forEach(item => {
+
+                item.classList.toggle(
+                    "ativo",
+                    item === botao
+                );
+
+            });
+
+            renderizarJogos();
+
+        }
+    );
+
+});
+
+
+/* TABELA */
+
+$("#tableMode")
+.addEventListener(
+    "change",
+    evento => {
+
+        estado.modoTabela =
+            evento.target.value;
+
+        renderizarTabela();
+
+    }
+);
+
+
+/* BUSCA DE JOGADOR */
+
+$("#playerSearch")
+.addEventListener(
+    "input",
+    evento => {
+
+        estado.buscaJogador =
+            evento.target.value;
+
+        renderizarJogadores();
+
+    }
+);
+
+
+/* BUSCA DE CLUBE */
+
+$("#clubSearch")
+.addEventListener(
+    "input",
+    evento => {
+
+        estado.buscaClube =
+            evento.target.value;
+
+        renderizarClubes();
+
+    }
+);
+
+
+/* ARTILHARIA / ASSISTÊNCIAS */
+
+$$("[data-player-stat]")
+.forEach(botao => {
+
+    botao.addEventListener(
+        "click",
+        () => {
+
+            estado.estatistica =
+                botao.dataset.playerStat;
+
+            $$("[data-player-stat]")
+            .forEach(item => {
+
+                item.classList.toggle(
+                    "ativa",
+                    item === botao
+                );
+
+            });
+
+            renderizarPodio();
+
+            renderizarJogadores();
+
+        }
+    );
+
+});
+
+
+/* BOTÕES DE ROLAGEM */
+
+$$("[data-scroll]")
+.forEach(botao => {
+
+    botao.addEventListener(
+        "click",
+        () => {
+
+            const destino =
+                document.getElementById(
+                    botao.dataset.scroll
+                );
+
+            destino.scrollIntoView({
+                behavior: "smooth"
+            });
+
+        }
+    );
+
+});
+
+
+/* =====================================
+   INÍCIO
+===================================== */
+
+carregarTema();
+
+renderizarTudo();

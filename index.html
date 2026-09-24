@@ -1,207 +1,413 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark" data-league="brasileirao">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#061b16">
-  <meta name="description" content="Placar — acompanhamento moderno de Brasileirão, Premier League e La Liga.">
-  <title>Placar — Futebol em tempo quase real</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="estilo.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description"
+        content="Site responsivo para acompanhar jogos, classificação e estatísticas do futebol.">
+
+    <title>Placar - Futebol</title>
+
+    <link rel="stylesheet" href="estilo.css">
 </head>
+
 <body>
-  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
 
-  <header class="site-header" id="topo">
-    <div class="nav shell">
-      <a class="brand" href="#topo" aria-label="Placar início">
-        <span class="brand-mark"><span></span></span>
-        <span>
-          <strong>Placar</strong>
-          <small>football data center</small>
-        </span>
-      </a>
+    <!-- CABEÇALHO -->
+    <header class="cabecalho">
 
-      <nav class="league-nav" aria-label="Competições">
-        <button class="league-btn active" data-league="brasileirao" type="button">🇧🇷 <span>Brasileirão</span></button>
-        <button class="league-btn" data-league="premier" type="button">🏴 <span>Premier League</span></button>
-        <button class="league-btn" data-league="laliga" type="button">🇪🇸 <span>La Liga</span></button>
-      </nav>
+        <div class="container nav">
 
-      <div class="header-actions">
-        <button class="icon-btn" id="refreshBtn" type="button" aria-label="Atualizar dados" title="Atualizar dados">↻</button>
-        <button class="icon-btn" id="themeBtn" type="button" aria-label="Alternar tema" title="Alternar tema">☾</button>
-        <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="mobileMenu" aria-label="Abrir menu">☰</button>
-      </div>
-    </div>
+            <a href="#inicio" class="logo">
+                <span class="logo-bola">⚽</span>
 
-    <div class="mobile-menu" id="mobileMenu" hidden>
-      <div class="shell mobile-menu-inner">
-        <button data-league="brasileirao" type="button">🇧🇷 Brasileirão Série A</button>
-        <button data-league="premier" type="button">🏴 Premier League</button>
-        <button data-league="laliga" type="button">🇪🇸 La Liga</button>
-        <a href="#jogos">Jogos</a>
-        <a href="#tabela">Classificação</a>
-        <a href="#estatisticas">Estatísticas</a>
-      </div>
-    </div>
+                <div>
+                    <strong>Placar</strong>
+                    <small>Futebol</small>
+                </div>
+            </a>
 
-    <div class="status-strip">
-      <div class="shell status-strip-inner">
-        <div class="live-status"><span class="live-dot"></span><strong id="syncStatus">Sincronizado</strong></div>
-        <div class="status-meta"><span id="lastUpdated">23/09/2026 08:00</span><span>•</span><span>Dados locais estruturados</span></div>
-      </div>
-    </div>
-  </header>
+            <nav class="menu">
 
-  <main id="conteudo">
-    <section class="hero section-pad">
-      <div class="shell hero-grid">
-        <div class="hero-copy">
-          <span class="eyebrow" id="leagueEyebrow">BRASILEIRÃO SÉRIE A · 2026</span>
-          <h1>O futebol inteiro na mesma tela.</h1>
-          <p id="heroText">Tabela, jogos, artilharia e assistência com interface rápida, limpa e responsiva.</p>
-          <div class="hero-controls">
-            <button class="primary-btn" data-scroll="jogos" type="button">Ver jogos <span>→</span></button>
-            <button class="ghost-btn" data-scroll="tabela" type="button">Abrir classificação</button>
-          </div>
-          <div class="micro-stats" id="microStats"></div>
-        </div>
+                <button class="liga-btn ativo" data-league="brasileirao">
+                    🇧🇷 Brasileirão
+                </button>
 
-        <aside class="spotlight-card" aria-label="Destaque da competição">
-          <div class="spotlight-top">
-            <div>
-              <span class="mini-label">DESTAQUE</span>
-              <strong id="spotlightTitle">Carregando...</strong>
-              <small id="spotlightSub">Estatísticas</small>
+                <button class="liga-btn" data-league="premier">
+                    🏴 Premier League
+                </button>
+
+                <button class="liga-btn" data-league="laliga">
+                    🇪🇸 La Liga
+                </button>
+
+            </nav>
+
+            <div class="acoes">
+
+                <button id="themeBtn" class="botao-icone" title="Alterar tema">
+                    ☀
+                </button>
+
+                <button id="menuBtn" class="botao-icone menu-mobile" title="Abrir menu">
+                    ☰
+                </button>
+
             </div>
-            <div class="spotlight-number" id="spotlightNumber">0</div>
-          </div>
-          <div class="spotlight-bars" id="spotlightBars"></div>
-        </aside>
-      </div>
-    </section>
 
-    <section class="quick-nav section-pad compact-pad">
-      <div class="shell">
-        <div class="section-heading inline-heading">
-          <div>
-            <span class="section-kicker">NAVEGAÇÃO RÁPIDA</span>
-            <h2>Escolha o que quer acompanhar</h2>
-          </div>
-          <div class="segmented" role="tablist" aria-label="Seções do painel">
-            <button class="seg-btn active" data-view="overview" role="tab" type="button">Visão geral</button>
-            <button class="seg-btn" data-view="matches" role="tab" type="button">Jogos</button>
-            <button class="seg-btn" data-view="standings" role="tab" type="button">Tabela</button>
-            <button class="seg-btn" data-view="players" role="tab" type="button">Jogadores</button>
-          </div>
         </div>
-      </div>
-    </section>
 
-    <section class="panel section-pad" id="jogos">
-      <div class="shell">
-        <div class="section-heading">
-          <div>
-            <span class="section-kicker">CENTRO DE JOGOS</span>
-            <h2>Jogos e resultados</h2>
-          </div>
-          <div class="toolbar">
-            <button class="toolbar-btn active" data-match-filter="all" type="button">Todos</button>
-            <button class="toolbar-btn" data-match-filter="live" type="button">Ao vivo</button>
-            <button class="toolbar-btn" data-match-filter="finished" type="button">Encerrados</button>
-            <button class="toolbar-btn" data-match-filter="scheduled" type="button">Próximos</button>
-          </div>
-        </div>
-        <div class="games-layout">
-          <div class="games-main" id="matchesGrid"></div>
-          <aside class="side-card next-card">
-            <div class="side-card-head"><span>PRÓXIMO JOGO</span><span id="nextGameBadge">—</span></div>
-            <div id="nextGame"></div>
-          </aside>
-        </div>
-      </div>
-    </section>
+        <!-- MENU MOBILE -->
 
-    <section class="panel alt-panel section-pad" id="tabela">
-      <div class="shell">
-        <div class="section-heading">
-          <div>
-            <span class="section-kicker">CLASSIFICAÇÃO</span>
-            <h2>Tabela completa</h2>
-          </div>
-          <div class="table-controls">
-            <label class="select-wrap">
-              <span class="sr-only">Modo da tabela</span>
-              <select id="tableMode">
-                <option value="overall">Geral</option>
-                <option value="form">Forma</option>
-                <option value="attack">Ataque</option>
-                <option value="defense">Defesa</option>
-              </select>
-            </label>
-          </div>
-        </div>
-        <div class="table-shell" id="standingsTable"></div>
-        <div class="table-legend" id="tableLegend"></div>
-      </div>
-    </section>
+        <div id="mobileMenu" class="mobile-menu" hidden>
 
-    <section class="stats-section section-pad" id="estatisticas">
-      <div class="shell">
-        <div class="section-heading stats-heading">
-          <div>
-            <span class="section-kicker">DADOS INDIVIDUAIS</span>
-            <h2>Artilharia, assistência e desempenho</h2>
-          </div>
-          <div class="player-tools">
-            <div class="stats-tabs" role="tablist" aria-label="Estatísticas dos jogadores">
-              <button class="stats-tab active" data-player-stat="goals" type="button">Artilharia</button>
-              <button class="stats-tab" data-player-stat="assists" type="button">Assistências</button>
+            <button data-league="brasileirao">
+                🇧🇷 Brasileirão
+            </button>
+
+            <button data-league="premier">
+                🏴 Premier League
+            </button>
+
+            <button data-league="laliga">
+                🇪🇸 La Liga
+            </button>
+
+            <a href="#jogos">Jogos</a>
+
+            <a href="#tabela">Classificação</a>
+
+            <a href="#estatisticas">Estatísticas</a>
+
+        </div>
+
+    </header>
+
+
+    <!-- CONTEÚDO PRINCIPAL -->
+
+    <main id="inicio">
+
+        <!-- HERO -->
+
+        <section class="hero">
+
+            <div class="container hero-grid">
+
+                <div class="hero-texto">
+
+                    <span id="leagueEyebrow" class="categoria">
+                        BRASILEIRÃO SÉRIE A
+                    </span>
+
+                    <h1>
+                        O futebol inteiro
+                        <span>na mesma tela.</span>
+                    </h1>
+
+                    <p id="heroText">
+                        Acompanhe jogos, classificação e estatísticas
+                        de futebol em um só lugar.
+                    </p>
+
+                    <div class="hero-botoes">
+
+                        <button class="botao-principal" data-scroll="jogos">
+                            Ver jogos →
+                        </button>
+
+                        <button class="botao-secundario" data-scroll="tabela">
+                            Classificação
+                        </button>
+
+                    </div>
+
+                    <div id="microStats" class="micro-stats"></div>
+
+                </div>
+
+
+                <!-- DESTAQUE -->
+
+                <div class="destaque">
+
+                    <span class="categoria">
+                        DESTAQUE
+                    </span>
+
+                    <div class="destaque-topo">
+
+                        <div>
+
+                            <h2 id="spotlightTitle">
+                                Carregando...
+                            </h2>
+
+                            <p id="spotlightSub">
+                                Estatísticas
+                            </p>
+
+                        </div>
+
+                        <strong id="spotlightNumber">
+                            0
+                        </strong>
+
+                    </div>
+
+                    <div id="spotlightBars"></div>
+
+                </div>
+
             </div>
-            <label class="search-wrap" aria-label="Pesquisar jogador">
-              <span>⌕</span>
-              <input id="playerSearch" type="search" placeholder="Pesquisar jogador..." autocomplete="off">
-            </label>
-          </div>
+
+        </section>
+
+
+        <!-- JOGOS -->
+
+        <section id="jogos" class="secao">
+
+            <div class="container">
+
+                <div class="titulo-secao">
+
+                    <div>
+                        <span class="categoria">
+                            CENTRO DE JOGOS
+                        </span>
+
+                        <h2>Jogos e resultados</h2>
+                    </div>
+
+                    <div class="filtros">
+
+                        <button class="filtro ativo" data-match-filter="all">
+                            Todos
+                        </button>
+
+                        <button class="filtro" data-match-filter="live">
+                            Ao vivo
+                        </button>
+
+                        <button class="filtro" data-match-filter="finished">
+                            Encerrados
+                        </button>
+
+                        <button class="filtro" data-match-filter="scheduled">
+                            Próximos
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="jogos-layout">
+
+                    <div id="matchesGrid" class="jogos-grid"></div>
+
+                    <aside class="proximo-jogo">
+
+                        <span>PRÓXIMO JOGO</span>
+
+                        <div id="nextGame"></div>
+
+                    </aside>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- CLASSIFICAÇÃO -->
+
+        <section id="tabela" class="secao secao-alternativa">
+
+            <div class="container">
+
+                <div class="titulo-secao">
+
+                    <div>
+
+                        <span class="categoria">
+                            CLASSIFICAÇÃO
+                        </span>
+
+                        <h2>Tabela do campeonato</h2>
+
+                    </div>
+
+                    <select id="tableMode">
+
+                        <option value="overall">
+                            Geral
+                        </option>
+
+                        <option value="form">
+                            Forma
+                        </option>
+
+                        <option value="attack">
+                            Ataque
+                        </option>
+
+                        <option value="defense">
+                            Defesa
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div id="standingsTable" class="tabela-container"></div>
+
+                <div id="tableLegend" class="legenda"></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ESTATÍSTICAS -->
+
+        <section id="estatisticas" class="secao">
+
+            <div class="container">
+
+                <div class="titulo-secao">
+
+                    <div>
+
+                        <span class="categoria">
+                            ESTATÍSTICAS
+                        </span>
+
+                        <h2>Jogadores em destaque</h2>
+
+                    </div>
+
+
+                    <div class="estatisticas-controles">
+
+                        <div class="abas">
+
+                            <button
+                                class="aba ativa"
+                                data-player-stat="goals">
+                                Artilharia
+                            </button>
+
+                            <button
+                                class="aba"
+                                data-player-stat="assists">
+                                Assistências
+                            </button>
+
+                        </div>
+
+                        <input
+                            id="playerSearch"
+                            type="search"
+                            placeholder="Pesquisar jogador..."
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div id="podium" class="podio"></div>
+
+                <div
+                    id="playersTable"
+                    class="tabela-container">
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- CLUBES -->
+
+        <section class="secao clubes">
+
+            <div class="container">
+
+                <div class="titulo-secao">
+
+                    <div>
+
+                        <span class="categoria">
+                            CLUBES
+                        </span>
+
+                        <h2>Times da competição</h2>
+
+                    </div>
+
+                    <input
+                        id="clubSearch"
+                        type="search"
+                        placeholder="Buscar clube..."
+                    >
+
+                </div>
+
+
+                <div
+                    id="clubsGrid"
+                    class="clubes-grid">
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- RODAPÉ -->
+
+    <footer class="rodape">
+
+        <div class="container">
+
+            <div class="rodape-conteudo">
+
+                <div>
+
+                    <strong>⚽ Placar</strong>
+
+                    <p>
+                        Projeto acadêmico desenvolvido com
+                        HTML, CSS e JavaScript.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="rodape-final">
+                © 2026 Placar - Projeto acadêmico
+            </div>
+
         </div>
 
-        <div class="podium" id="podium"></div>
-        <div class="player-table-shell" id="playersTable"></div>
-      </div>
-    </section>
+    </footer>
 
-    <section class="clubs-section section-pad">
-      <div class="shell">
-        <div class="section-heading">
-          <div>
-            <span class="section-kicker">CLUBES</span>
-            <h2>Todos os times da divisão principal</h2>
-          </div>
-          <div class="club-search">
-            <span>⌕</span>
-            <input id="clubSearch" type="search" placeholder="Buscar clube..." autocomplete="off">
-          </div>
-        </div>
-        <div class="clubs-grid" id="clubsGrid"></div>
-      </div>
-    </section>
-  </main>
 
-  <footer class="site-footer">
-    <div class="shell footer-grid">
-      <div>
-        <div class="footer-brand"><span class="brand-mark"><span></span></span> Placar</div>
-        <p>Projeto acadêmico responsivo focado em estruturação de dados esportivos utilizando HTML, CSS e JavaScript puros.</p>
-      </div>
-      
-    </div>
-    <div class="shell footer-bottom">© 2026 Placar · Projeto desenvolvido para fins acadêmicos.</div>
-  </footer>
+    <!-- JAVASCRIPT -->
 
-  <script src="dadosreais.js"></script>
-  <script src="fut.js"></script>
+    <script src="dadosreais.js"></script>
+    <script src="fut.js"></script>
+
 </body>
+
 </html>
