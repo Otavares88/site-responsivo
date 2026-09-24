@@ -1,57 +1,95 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark" data-league="brasileirao">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta name="description"
-        content="Site responsivo para acompanhar jogos, classificação e estatísticas do futebol.">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <title>Placar - Futebol</title>
+    <meta
+        name="description"
+        content="Painel de futebol com classificação, resultados e estatísticas."
+    >
+
+    <title>PLACAR — Painel de Futebol</title>
 
     <link rel="stylesheet" href="estilo.css">
 </head>
 
-<body>
+<body class="liga-brasileirao">
 
-    <!-- CABEÇALHO -->
-    <header class="cabecalho">
+    <!-- =================================================
+         HEADER
+    ================================================== -->
 
-        <div class="container nav">
+    <header class="header">
 
-            <a href="#inicio" class="logo">
-                <span class="logo-bola">⚽</span>
+        <div class="container header-inner">
 
-                <div>
-                    <strong>Placar</strong>
-                    <small>Futebol</small>
-                </div>
-            </a>
+            <button
+                class="logo"
+                data-section="inicio"
+                aria-label="Ir para o início"
+            >
+                <span>⚽</span>
+                <strong>PLACAR</strong>
+            </button>
 
-            <nav class="menu">
 
-                <button class="liga-btn ativo" data-league="brasileirao">
-                    🇧🇷 Brasileirão
+            <nav class="desktop-nav">
+
+                <button
+                    class="nav-link active"
+                    data-section="inicio"
+                >
+                    Início
                 </button>
 
-                <button class="liga-btn" data-league="premier">
-                    🏴 Premier League
+                <button
+                    class="nav-link"
+                    data-section="jogos"
+                >
+                    Jogos
                 </button>
 
-                <button class="liga-btn" data-league="laliga">
-                    🇪🇸 La Liga
+                <button
+                    class="nav-link"
+                    data-section="classificacao"
+                >
+                    Classificação
+                </button>
+
+                <button
+                    class="nav-link"
+                    data-section="estatisticas"
+                >
+                    Estatísticas
                 </button>
 
             </nav>
 
-            <div class="acoes">
 
-                <button id="themeBtn" class="botao-icone" title="Alterar tema">
-                    ☀
+            <div class="header-actions">
+
+                <button
+                    id="themeButton"
+                    class="icon-button theme-button"
+                    aria-label="Mudar para tema claro"
+                    title="Mudar para tema claro"
+                >
+                    🌙
                 </button>
 
-                <button id="menuBtn" class="botao-icone menu-mobile" title="Abrir menu">
+
+                <button
+                    id="mobileMenuButton"
+                    class="icon-button mobile-button"
+                    aria-label="Abrir menu"
+                    title="Abrir menu"
+                >
                     ☰
                 </button>
 
@@ -59,105 +97,136 @@
 
         </div>
 
+
         <!-- MENU MOBILE -->
 
-        <div id="mobileMenu" class="mobile-menu" hidden>
+        <div
+            id="mobileMenu"
+            class="mobile-menu"
+        >
 
-            <button data-league="brasileirao">
-                🇧🇷 Brasileirão
+            <button
+                class="mobile-nav-link active"
+                data-section="inicio"
+            >
+                Início
             </button>
 
-            <button data-league="premier">
-                🏴 Premier League
+            <button
+                class="mobile-nav-link"
+                data-section="jogos"
+            >
+                Jogos
             </button>
 
-            <button data-league="laliga">
-                🇪🇸 La Liga
+            <button
+                class="mobile-nav-link"
+                data-section="classificacao"
+            >
+                Classificação
             </button>
 
-            <a href="#jogos">Jogos</a>
-
-            <a href="#tabela">Classificação</a>
-
-            <a href="#estatisticas">Estatísticas</a>
+            <button
+                class="mobile-nav-link"
+                data-section="estatisticas"
+            >
+                Estatísticas
+            </button>
 
         </div>
 
     </header>
 
 
-    <!-- CONTEÚDO PRINCIPAL -->
+    <!-- =================================================
+         CONTEÚDO
+    ================================================== -->
 
-    <main id="inicio">
+    <main>
 
-        <!-- HERO -->
+        <!-- =================================================
+             HERO
+        ================================================== -->
 
-        <section class="hero">
+        <section
+            id="inicio"
+            class="hero"
+        >
 
-            <div class="container hero-grid">
+            <div class="hero-glow"></div>
 
-                <div class="hero-texto">
+            <div class="container hero-content">
 
-                    <span id="leagueEyebrow" class="categoria">
-                        BRASILEIRÃO SÉRIE A
+                <div class="hero-copy">
+
+                    <span
+                        id="leagueEyebrow"
+                        class="eyebrow"
+                    >
+                        CAMPEONATO BRASILEIRO • 2026
                     </span>
+
 
                     <h1>
-                        O futebol inteiro
-                        <span>na mesma tela.</span>
+                        Futebol em um só lugar.
                     </h1>
 
+
                     <p id="heroText">
-                        Acompanhe jogos, classificação e estatísticas
-                        de futebol em um só lugar.
+                        Classificação, resultados e estatísticas do Brasileirão.
                     </p>
 
-                    <div class="hero-botoes">
 
-                        <button class="botao-principal" data-scroll="jogos">
-                            Ver jogos →
-                        </button>
+                    <div class="hero-date">
 
-                        <button class="botao-secundario" data-scroll="tabela">
-                            Classificação
-                        </button>
-
-                    </div>
-
-                    <div id="microStats" class="micro-stats"></div>
-
-                </div>
-
-
-                <!-- DESTAQUE -->
-
-                <div class="destaque">
-
-                    <span class="categoria">
-                        DESTAQUE
-                    </span>
-
-                    <div class="destaque-topo">
-
-                        <div>
-
-                            <h2 id="spotlightTitle">
-                                Carregando...
-                            </h2>
-
-                            <p id="spotlightSub">
-                                Estatísticas
-                            </p>
-
-                        </div>
-
-                        <strong id="spotlightNumber">
-                            0
+                        Dados do site:
+                        <strong id="siteDate">
+                            23/09/2026
                         </strong>
 
                     </div>
 
-                    <div id="spotlightBars"></div>
+                </div>
+
+
+                <!-- SELETOR DAS LIGAS -->
+
+                <div class="league-selector">
+
+                    <span class="selector-label">
+                        Campeonato
+                    </span>
+
+
+                    <div class="league-buttons">
+
+                        <button
+                            class="league-button active"
+                            data-league="brasileirao"
+                        >
+                            <span>🇧🇷</span>
+                            Brasileirão
+                        </button>
+
+
+                        <button
+                            class="league-button"
+                            data-league="premier"
+                        >
+                            <span>🏴</span>
+                            Premier League
+                        </button>
+
+
+                        <button
+                            class="league-button"
+                            data-league="laliga"
+                        >
+                            <span>🇪🇸</span>
+                            LaLiga
+                        </button>
+
+                    </div>
 
                 </div>
 
@@ -166,56 +235,79 @@
         </section>
 
 
-        <!-- JOGOS -->
+        <!-- =================================================
+             MICRO ESTATÍSTICAS
+        ================================================== -->
 
-        <section id="jogos" class="secao">
+        <section class="section section-top">
 
             <div class="container">
 
-                <div class="titulo-secao">
+                <div
+                    id="microStats"
+                    class="micro-stats"
+                ></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             DESTAQUE
+        ================================================== -->
+
+        <section class="section">
+
+            <div class="container">
+
+                <div class="section-heading">
 
                     <div>
-                        <span class="categoria">
-                            CENTRO DE JOGOS
+
+                        <span class="section-kicker">
+                            DESTAQUE
                         </span>
 
-                        <h2>Jogos e resultados</h2>
-                    </div>
-
-                    <div class="filtros">
-
-                        <button class="filtro ativo" data-match-filter="all">
-                            Todos
-                        </button>
-
-                        <button class="filtro" data-match-filter="live">
-                            Ao vivo
-                        </button>
-
-                        <button class="filtro" data-match-filter="finished">
-                            Encerrados
-                        </button>
-
-                        <button class="filtro" data-match-filter="scheduled">
-                            Próximos
-                        </button>
+                        <h2>
+                            Momento da competição
+                        </h2>
 
                     </div>
 
                 </div>
 
 
-                <div class="jogos-layout">
+                <div class="spotlight">
 
-                    <div id="matchesGrid" class="jogos-grid"></div>
+                    <div class="spotlight-main">
 
-                    <aside class="proximo-jogo">
+                        <span class="spotlight-label">
+                            LÍDER
+                        </span>
 
-                        <span>PRÓXIMO JOGO</span>
 
-                        <div id="nextGame"></div>
+                        <h3 id="spotlightTitle">
+                            Flamengo
+                        </h3>
 
-                    </aside>
+
+                        <p id="spotlightSub">
+                            Líder atual da competição
+                        </p>
+
+
+                        <strong id="spotlightNumber">
+                            60 pts
+                        </strong>
+
+                    </div>
+
+
+                    <div
+                        id="spotlightBars"
+                        class="spotlight-bars"
+                    ></div>
 
                 </div>
 
@@ -224,97 +316,251 @@
         </section>
 
 
-        <!-- CLASSIFICAÇÃO -->
+        <!-- =================================================
+             JOGOS
+        ================================================== -->
 
-        <section id="tabela" class="secao secao-alternativa">
+        <section
+            id="jogos"
+            class="section"
+        >
 
             <div class="container">
 
-                <div class="titulo-secao">
+                <div class="section-heading">
 
                     <div>
 
-                        <span class="categoria">
-                            CLASSIFICAÇÃO
+                        <span class="section-kicker">
+                            RESULTADOS
                         </span>
 
-                        <h2>Tabela do campeonato</h2>
+                        <h2>
+                            Jogos recentes
+                        </h2>
 
                     </div>
 
-                    <select id="tableMode">
 
-                        <option value="overall">
-                            Geral
-                        </option>
-
-                        <option value="form">
-                            Forma
-                        </option>
-
-                        <option value="attack">
-                            Ataque
-                        </option>
-
-                        <option value="defense">
-                            Defesa
-                        </option>
-
-                    </select>
+                    <span
+                        id="nextGameBadge"
+                        class="badge"
+                    >
+                        Resultados
+                    </span>
 
                 </div>
 
 
-                <div id="standingsTable" class="tabela-container"></div>
+                <div
+                    id="nextGame"
+                    class="next-game"
+                ></div>
 
-                <div id="tableLegend" class="legenda"></div>
+
+                <div
+                    id="matchesGrid"
+                    class="matches-grid"
+                ></div>
 
             </div>
 
         </section>
 
 
-        <!-- ESTATÍSTICAS -->
+        <!-- =================================================
+             CLASSIFICAÇÃO
+        ================================================== -->
 
-        <section id="estatisticas" class="secao">
+        <section
+            id="classificacao"
+            class="section"
+        >
 
             <div class="container">
 
-                <div class="titulo-secao">
+                <div class="section-heading">
 
                     <div>
 
-                        <span class="categoria">
-                            ESTATÍSTICAS
+                        <span class="section-kicker">
+                            TABELA
                         </span>
 
-                        <h2>Jogadores em destaque</h2>
+                        <h2>
+                            Classificação
+                        </h2>
 
                     </div>
 
 
-                    <div class="estatisticas-controles">
+                    <span class="table-info">
+                        20 clubes
+                    </span>
 
-                        <div class="abas">
+                </div>
 
-                            <button
-                                class="aba ativa"
-                                data-player-stat="goals">
-                                Artilharia
-                            </button>
 
-                            <button
-                                class="aba"
-                                data-player-stat="assists">
-                                Assistências
-                            </button>
+                <div class="table-card">
 
-                        </div>
+                    <div class="table-wrap">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+                                    <th>#</th>
+                                    <th>Clube</th>
+                                    <th>J</th>
+                                    <th>V</th>
+                                    <th>E</th>
+                                    <th>D</th>
+                                    <th>GP</th>
+                                    <th>GC</th>
+                                    <th>SG</th>
+                                    <th>PTS</th>
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody id="standingsTable">
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="podium"
+                    class="podium"
+                ></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             ESTATÍSTICAS
+        ================================================== -->
+
+        <section
+            id="estatisticas"
+            class="section"
+        >
+
+            <div class="container">
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <span class="section-kicker">
+                            INDIVIDUAL
+                        </span>
+
+                        <h2>
+                            Estatísticas
+                        </h2>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-controls">
+
+                    <button
+                        class="stat-button active"
+                        data-stat="goals"
+                    >
+                        ⚽ Artilharia
+                    </button>
+
+
+                    <button
+                        class="stat-button"
+                        data-stat="assists"
+                    >
+                        🎯 Assistências
+                    </button>
+
+                </div>
+
+
+                <div class="search-box">
+
+                    <span>🔎</span>
+
+                    <input
+                        id="playerSearch"
+                        type="text"
+                        placeholder="Buscar jogador..."
+                    >
+
+                </div>
+
+
+                <div class="table-card">
+
+                    <div class="table-wrap">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+                                    <th>#</th>
+                                    <th>Jogador</th>
+                                    <th>Clube</th>
+                                    <th>Valor</th>
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody id="playersTable">
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     CLUBES
+                ================================================== -->
+
+                <div class="clubs-header">
+
+                    <div>
+
+                        <span class="section-kicker">
+                            CLUBES
+                        </span>
+
+                        <h2>
+                            Times da competição
+                        </h2>
+
+                    </div>
+
+
+                    <div class="search-box compact">
+
+                        <span>🔎</span>
 
                         <input
-                            id="playerSearch"
-                            type="search"
-                            placeholder="Pesquisar jogador..."
+                            id="clubSearch"
+                            type="text"
+                            placeholder="Buscar clube..."
                         >
 
                     </div>
@@ -322,49 +568,10 @@
                 </div>
 
 
-                <div id="podium" class="podio"></div>
-
-                <div
-                    id="playersTable"
-                    class="tabela-container">
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- CLUBES -->
-
-        <section class="secao clubes">
-
-            <div class="container">
-
-                <div class="titulo-secao">
-
-                    <div>
-
-                        <span class="categoria">
-                            CLUBES
-                        </span>
-
-                        <h2>Times da competição</h2>
-
-                    </div>
-
-                    <input
-                        id="clubSearch"
-                        type="search"
-                        placeholder="Buscar clube..."
-                    >
-
-                </div>
-
-
                 <div
                     id="clubsGrid"
-                    class="clubes-grid">
-                </div>
+                    class="clubs-grid"
+                ></div>
 
             </div>
 
@@ -373,39 +580,43 @@
     </main>
 
 
-    <!-- RODAPÉ -->
+    <!-- =================================================
+         FOOTER
+    ================================================== -->
 
-    <footer class="rodape">
+    <footer class="footer">
 
-        <div class="container">
+        <div class="container footer-inner">
 
-            <div class="rodape-conteudo">
+            <div>
 
-                <div>
+                <strong>
+                    ⚽ PLACAR
+                </strong>
 
-                    <strong>⚽ Placar</strong>
 
-                    <p>
-                        Projeto acadêmico desenvolvido com
-                        HTML, CSS e JavaScript.
-                    </p>
-
-                </div>
+                <p>
+                    Painel de futebol estático para fins acadêmicos.
+                </p>
 
             </div>
 
-            <div class="rodape-final">
-                © 2026 Placar - Projeto acadêmico
-            </div>
+
+            <span>
+
+                Dados do site:
+
+                <strong>
+                    23/09/2026
+                </strong>
+
+            </span>
 
         </div>
 
     </footer>
 
 
-    <!-- JAVASCRIPT -->
-
-    <script src="dadosreais.js"></script>
     <script src="fut.js"></script>
 
 </body>
